@@ -1,11 +1,13 @@
-package api;
+package micro.board.article.api;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestClient;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import micro.board.article.service.response.ArticleResponse;
+
 
 public class ArticleApi {
 

@@ -1,11 +1,15 @@
 package micro.board.article.api;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.client.RestClient;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import micro.board.article.entity.Article;
 import micro.board.article.service.response.ArticlePageResponse;
 import micro.board.article.service.response.ArticleResponse;
 
@@ -47,6 +51,27 @@ public class ArticleApi {
 	}
 
 	@Test
+	void readAllInfiniteScroll(){
+		//given
+		List<ArticleResponse> articleResponse = readAllInfiniteScroll(1L, 5L);
+		Long lastArticleId = articleResponse.getLast().getArticleId();
+		List<ArticleResponse> articleResponses = readAllInfiniteScroll(1L, 5L, lastArticleId);
+
+		//when
+
+		//then
+		System.out.println("첫번째 시작");
+		for(ArticleResponse articleResponse1 : articleResponse){
+			System.out.println(articleResponse1.getArticleId());
+		}
+		System.out.println("두번째 시작");
+		for(ArticleResponse articleResponse2 : articleResponses){
+			System.out.println(articleResponse2.getArticleId());
+		}
+
+	}
+
+	@Test
 	void articleUpdateTest(){
 		//given
 		ArticleResponse articleResponse = update(143598649147011072L ,new ArticleUpdateRequest("바꾸기", "테스트"));
@@ -66,6 +91,7 @@ public class ArticleApi {
 
 		//then
 	}
+
 
 
 
@@ -91,12 +117,30 @@ public class ArticleApi {
 			.body(ArticlePageResponse.class);
 	}
 
+
 	ArticleResponse update(Long articleId, ArticleUpdateRequest articleUpdateRequest){
 		return restClient.put()
 			.uri("/v1/articles/{articleId}", articleId)
 			.body(articleUpdateRequest)
 			.retrieve()
 			.body(ArticleResponse.class);
+	}
+
+
+	List<ArticleResponse> readAllInfiniteScroll(Long boardId, Long limit){
+		return restClient.get()
+			.uri("/v1/articles/infinite-scroll?boardId={boardId}&limit={limit}",boardId,limit)
+			.retrieve()
+			.body(new ParameterizedTypeReference<List<ArticleResponse>>() {
+			});
+	}
+
+	List<ArticleResponse> readAllInfiniteScroll(Long boardId, Long limit, Long lastArticleId){
+		return restClient.get()
+			.uri("/v1/articles/infinite-scroll?boardId={boardId}&limit={limit}&lastArticleId={lastArticleId}",boardId,limit,lastArticleId)
+			.retrieve()
+			.body(new ParameterizedTypeReference<List<ArticleResponse>>() {
+			});
 	}
 
 	void delete(Long articleId){

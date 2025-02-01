@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import lombok.extern.slf4j.Slf4j;
 import micro.board.article.entity.Article;
+import micro.board.article.service.response.ArticleResponse;
 
 @SpringBootTest
 @Slf4j
@@ -32,6 +33,24 @@ class ArticleRepositoryTest {
 	void countTest(){
 		Long count = articleRepository.count(1L, 30L);
 		log.info("count 값 : " + count);
+	}
+
+	@Test
+	void findAllInfiniteScroll(){
+		List<Article> allInfiniteScroll = articleRepository.findAllInfiniteScroll(1L, 30L);
+
+		for(Article article: allInfiniteScroll){
+			log.info("Ariticle 값 = {}",  article.getArticleId());
+		}
+
+		Long articleId = allInfiniteScroll.getLast().getArticleId();
+
+		List<Article> allInfiniteScrollValue = articleRepository.findAllInfiniteScroll(1L, 30L, articleId);
+
+		for(Article article : allInfiniteScrollValue){
+			log.info("무한 스크롤 Article 값 = {}", article.getArticleId());
+		}
+
 	}
 
 

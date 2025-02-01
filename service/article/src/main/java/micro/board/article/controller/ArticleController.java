@@ -1,5 +1,7 @@
 package micro.board.article.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +38,15 @@ public class ArticleController {
 		@RequestParam("page") Long page,
 		@RequestParam("pageSize") Long pageSize){
 		return articleService.readAll(boardId, page, pageSize);
+	}
+
+	@GetMapping("/v1/articles/infinite-scroll")
+	public List<ArticleResponse> readAllInfiniteScroll(
+		@RequestParam("boardId") Long boardId,
+		@RequestParam("limit") Long limit,
+		@RequestParam(value = "lastArticleId", required = false) Long lastArticleId
+	){
+		return articleService.readAllInfiniteScroll(boardId, limit, lastArticleId);
 	}
 
 	@PostMapping("/v1/articles")

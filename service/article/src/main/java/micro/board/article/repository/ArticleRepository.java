@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import micro.board.article.entity.Article;
+import micro.board.article.service.response.ArticleResponse;
 
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
@@ -37,4 +38,39 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 		@Param("boardId") Long boardId,
 		@Param("limit") Long limit
 	);
+
+	@Query(
+		value= "SELECT article.article_id, article.title, article.content, article.board_id, article.writer_id,"
+			+ "article.created_at, article.modified_at "
+		   + "FROM article where board_id = :boardId "
+			+ "order by article_id desc limit :limit ",
+		nativeQuery = true
+	)
+	List<Article> findAllInfiniteScroll(
+		@Param("boardId") Long boardId,
+		@Param("limit") Long limit
+	);
+
+	@Query(
+		value= "SELECT article.article_id, article.title, article.content, article.board_id, article.writer_id,"
+			+ "article.created_at, article.modified_at "
+			+ "FROM article where board_id = :boardId and article_id < :lastArticleId "
+			+ "order by article_id desc limit :limit ",
+		nativeQuery = true
+	)
+	List<Article> findAllInfiniteScroll(
+		@Param("boardId") Long boardId,
+		@Param("limit") Long limit,
+		@Param("lastArticleId") Long lastArticleId
+	);
+
+	// @Query(
+	// 	value= "SELECT * "
+	// 		+ "FROM article where board_id = :boardId limit :limit ",
+	// 	nativeQuery = true
+	// )
+	// List<Article> findAllInfiniteScroll(
+	// 	@Param("boardId") Long boardId,
+	// 	@Param("limit") Long limit
+	// );
 }

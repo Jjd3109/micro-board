@@ -1,5 +1,7 @@
 package micro.board.article.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -58,6 +60,14 @@ public class ArticleService {
 				PageLimitCalculator.calculatePageLimit(page, pageSize, 10L)
 			)
 		);
+	}
+
+	public List<ArticleResponse> readAllInfiniteScroll(Long boardId, Long limit, Long lastArticleId){
+		List<Article> articles = lastArticleId == null ?
+			articleRepository.findAllInfiniteScroll(boardId, limit) :
+			articleRepository.findAllInfiniteScroll(boardId, limit, lastArticleId);
+
+		return articles.stream().map(ArticleResponse::from).toList();
 	}
 
 }

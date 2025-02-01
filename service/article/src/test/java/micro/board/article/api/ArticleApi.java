@@ -6,6 +6,7 @@ import org.springframework.web.client.RestClient;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import micro.board.article.service.response.ArticlePageResponse;
 import micro.board.article.service.response.ArticleResponse;
 
 
@@ -35,6 +36,17 @@ public class ArticleApi {
 	}
 
 	@Test
+	void readAlltest(){
+		//given
+		ArticlePageResponse articlePageResponse = readAll(1L, 30L, 10L);
+
+		//when
+
+		//then
+		System.out.println("response = " + articlePageResponse);
+	}
+
+	@Test
 	void articleUpdateTest(){
 		//given
 		ArticleResponse articleResponse = update(143598649147011072L ,new ArticleUpdateRequest("바꾸기", "테스트"));
@@ -55,6 +67,8 @@ public class ArticleApi {
 		//then
 	}
 
+
+
 	ArticleResponse create(ArticleCreateRequest articleCreateRequest){
 		return restClient.post()
 			.uri("/v1/articles")
@@ -68,6 +82,13 @@ public class ArticleApi {
 			.uri("/v1/articles/{articleId}", articleId)
 			.retrieve()
 			.body(ArticleResponse.class);
+	}
+
+	ArticlePageResponse readAll(Long boardId, Long page, Long pageSize){
+		return restClient.get()
+			.uri("/v1/articles?boardId={boardId}&page={page}&pageSize={pageSize}",boardId,page,pageSize)
+			.retrieve()
+			.body(ArticlePageResponse.class);
 	}
 
 	ArticleResponse update(Long articleId, ArticleUpdateRequest articleUpdateRequest){

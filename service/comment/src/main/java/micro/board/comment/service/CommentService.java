@@ -55,30 +55,31 @@ public class CommentService {
 	}
 
 	@Transactional
-	public void delete(Long commentId){
+	public void delete(Long commentId) {
 		commentRepository.findById(commentId)
-				.filter(not(Comment::getDeleted)) // 삭제되어있지 않으면
+			.filter(not(Comment::getDeleted))
 			.ifPresent(comment -> {
-				if(hasChildren(comment)){
+				if (hasChildren(comment)) {
 					comment.delete();
-				} else{
+				} else {
 					delete(comment);
 				}
 			});
 	}
 
 	private boolean hasChildren(Comment comment) {
-		return commentRepository.countBy(comment.getArticleId(), comment.getParentCommentId(), 2L) == 2;
+		return commentRepository.countBy(comment.getArticleId(), comment.getCommentId(), 2L) == 2;
 	}
 
-	private void delete(Comment comment){
+	private void delete(Comment comment) {
 		commentRepository.delete(comment);
-		if(!comment.isRoot()){
+		if (!comment.isRoot()) {
 			commentRepository.findById(comment.getParentCommentId())
 				.filter(Comment::getDeleted)
 				.filter(not(this::hasChildren))
 				.ifPresent(this::delete);
 		}
 	}
+
 
 }

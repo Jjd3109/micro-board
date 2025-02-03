@@ -10,6 +10,7 @@ import org.springframework.web.client.RestClient;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import micro.board.comment.service.response.CommentPageResponse;
 import micro.board.comment.service.response.CommentResponse;
 import org.assertj.core.api.Assertions.*;
 import org.testng.Assert;
@@ -70,6 +71,21 @@ public class commentApiTest {
 		//then
 
 
+	}
+
+	@Test
+	void readAll(){
+		CommentPageResponse commentPageResponse = restClient.get()
+			.uri("/v1/comments?articleId=1&page=50000&pageSize=10")
+			.retrieve()
+			.body(CommentPageResponse.class);
+
+		for(CommentResponse commentResponse : commentPageResponse.getCommentResponseList()){
+			if(!commentResponse.getCommentId().equals(commentResponse.getParentCommentId())){
+				System.out.print("\t");
+			}
+			System.out.println("comment.getCommentId = " + commentResponse.getCommentId());
+		}
 	}
 
 

@@ -30,7 +30,7 @@ public class Comment {
 		Comment comment = new Comment();
 		comment.commentId = commentId;
 		comment.content = content;
-		comment.articleId = articleId;
+		comment.articleId = (articleId != null) ? articleId : 1L;
 		comment.parentCommentId = parentCommentId == null ? commentId : parentCommentId;
 		comment.writerId = writerId;
 		comment.deleted = false;

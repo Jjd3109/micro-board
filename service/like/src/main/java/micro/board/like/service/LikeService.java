@@ -24,11 +24,29 @@ public class LikeService {
 			Like.create(
 				snowflake.nextId(),
 				likeCreateRequest.getArticleId(),
-				likeCreateRequest.getUserId(),
-				likeCreateRequest.getCreatedAt()
+				likeCreateRequest.getUserId()
 			)
 		);
-		return LikeResponse.of(save);
+		return LikeResponse.from(save);
+	}
+
+
+	public LikeResponse find(Long articleLikeId){
+		return likeRepository.findById(articleLikeId)
+			.map(LikeResponse::from)
+			.orElseThrow();
+	}
+
+	public LikeResponse read(Long articleId, Long userId) {
+		return likeRepository.findByArticleIdAndUserId(articleId, userId)
+			.map(LikeResponse::from)
+			.orElseThrow();
+	}
+
+	@Transactional
+	public void delete(Long articleId, Long userId) {
+		likeRepository.findByArticleIdAndUserId(articleId, userId)
+			.ifPresent(likeRepository::delete);
 	}
 
 }

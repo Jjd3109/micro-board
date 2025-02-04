@@ -16,7 +16,7 @@ public class LikeResponse {
 	private Long userId;
 	private LocalDateTime createdAt;
 
-	public static LikeResponse of(Like like) {
+	public static LikeResponse from(Like like) {
 		LikeResponse likeResponse = new LikeResponse();
 		likeResponse.articleLikeId = like.getArticleLikeId();
 		likeResponse.articleId = like.getArticleId();

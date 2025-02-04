@@ -39,17 +39,16 @@ class LikeServiceTest {
 
 
 	@Test
-	@DisplayName("좋아요")
+	@DisplayName("좋아요 생성")
 	void create(){
 		//given
 
 		Long likeId = 1L;
 		Long articleId = 100L;
 		Long userId = 200L;
-		LocalDateTime createdAt = LocalDateTime.now();
 
-		LikeCreateRequest request = new LikeCreateRequest(articleId, userId, createdAt);
-		Like like = Like.create(likeId, articleId, userId, createdAt);
+		LikeCreateRequest request = new LikeCreateRequest(articleId, userId);
+		Like like = Like.create(likeId, articleId, userId);
 
 		when(likeRepository.save(any(Like.class))).thenReturn(like);
 
@@ -59,10 +58,28 @@ class LikeServiceTest {
 		// then
 		assertThat(response).isNotNull();
 
-
-
 	}
 
+	@Test
+	@DisplayName("좋아요 조회")
+	void findById() {
+		// given
+		Long articleLikeId = 1L;
+		Long articleId = 100L;
+		Long userId = 200L;
+		Like like = Like.create(articleLikeId, articleId, userId);
+
+		// LikeRepository가 findById 호출 시 해당 Like 객체를 반환하도록 설정
+		when(likeRepository.findById(articleLikeId)).thenReturn(java.util.Optional.of(like));
+
+		// when
+		LikeResponse response = likeService.find(articleLikeId);
+
+		// then
+		assertThat(response).isNotNull();  // 응답이 null이 아님을 확인
+		assertThat(response.getArticleId()).isEqualTo(articleId);  // Article ID가 올바른지 확인
+		assertThat(response.getUserId()).isEqualTo(userId);  // User ID가 올바른지 확인
+	}
 
 
 }

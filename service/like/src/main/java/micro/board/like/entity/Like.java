@@ -24,12 +24,12 @@ public class Like {
 	private Long userId;
 	private LocalDateTime createdAt;
 
-	public static Like create(Long articleLikeId, Long articleId, Long userId, LocalDateTime createdAt) {
+	public static Like create(Long articleLikeId, Long articleId, Long userId) {
 		Like like = new Like();
 		like.articleLikeId = articleLikeId;
 		like.articleId = articleId;
 		like.userId = userId;
-		like.createdAt = createdAt;
+		like.createdAt = LocalDateTime.now();
 		return like;
 	}
 }

@@ -14,7 +14,5 @@ public class LikeCreateRequest {
 
 	private Long articleId;
 	private Long userId;
-	private LocalDateTime createdAt;
-
 
 }

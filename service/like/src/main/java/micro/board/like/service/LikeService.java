@@ -47,9 +47,8 @@ public class LikeService {
 		);
 
 		int result = articleLikeCountRepository.increase(likeCreateRequest.getArticleId());
+
 		if(result == 0 ){
-
-
 			articleLikeCountRepository.save(
 				ArticleLikeCount.init(likeCreateRequest.getArticleId(), 1L)
 			);
@@ -78,13 +77,26 @@ public class LikeService {
 				likeCreateRequest.getUserId()
 			)
 		);
-	}
+
+		ArticleLikeCount articleLikeCount = articleLikeCountRepository.findLockedByArticleId(
+				likeCreateRequest.getArticleId())
+			.orElseGet(() -> ArticleLikeCount.init(likeCreateRequest.getArticleId(), 0L)
+			);
+
+		articleLikeCount.increase();
+		articleLikeCountRepository.save(articleLikeCount);
+	};
+
 
 
 	@Transactional
 	public void unLikePessimisticLock2(Long articleId, Long userId) {
 		likeRepository.findByArticleIdAndUserId(articleId, userId)
-			.ifPresent(likeRepository::delete);
+			.ifPresent(articleLike -> {
+				likeRepository.delete(articleLike);
+				ArticleLikeCount articleLikeCount = articleLikeCountRepository.findLockedByArticleId(articleId).orElseThrow();
+				articleLikeCount.decrease();
+			});
 	}
 
 	/*
@@ -92,7 +104,7 @@ public class LikeService {
 	 */
 
 	@Transactional
-	public void likePessimisticLock3(LikeCreateRequest likeCreateRequest) {
+	public void likeOptimisticLock(LikeCreateRequest likeCreateRequest) {
 		likeRepository.save(
 			Like.create(
 				snowflake.nextId(),
@@ -100,13 +112,25 @@ public class LikeService {
 				likeCreateRequest.getUserId()
 			)
 		);
+
+		ArticleLikeCount articleLikeCount = articleLikeCountRepository.findById(likeCreateRequest.getArticleId())
+			.orElseGet(
+				() -> ArticleLikeCount.init(likeCreateRequest.getArticleId(), 0L)
+			);
+
+		articleLikeCount.increase();
+		articleLikeCountRepository.save(articleLikeCount);
 	}
 
 
 	@Transactional
 	public void unLikePessimisticLock3(Long articleId, Long userId) {
 		likeRepository.findByArticleIdAndUserId(articleId, userId)
-			.ifPresent(likeRepository::delete);
+			.ifPresent(entity -> {
+				likeRepository.delete(entity);
+				ArticleLikeCount articleLikeCount = articleLikeCountRepository.findById(articleId).orElseThrow();
+				articleLikeCount.decrease();
+			});
 	}
 
 
@@ -122,6 +146,12 @@ public class LikeService {
 		return likeRepository.findByArticleIdAndUserId(articleId, userId)
 			.map(LikeResponse::from)
 			.orElseThrow();
+	}
+
+	public Long count(Long articleId){
+		return articleLikeCountRepository.findById(articleId)
+			.map(ArticleLikeCount::getLikeCount)
+			.orElse(0L);
 	}
 
 

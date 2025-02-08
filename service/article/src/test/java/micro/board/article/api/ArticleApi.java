@@ -150,6 +150,21 @@ public class ArticleApi {
 			.body(ArticleResponse.class);
 	}
 
+	@Test
+	void countTest(){
+		ArticleResponse articleResponse = create(new ArticleCreateRequest("h1", "content", 1L, 2L));
+
+		Long count = restClient.get()
+			.uri("/v1/articles/boards/{boardId}/count", articleResponse.getBoardId())
+			.retrieve()
+			.body(Long.class);
+
+		restClient.delete()
+			.uri("/v1/articles/{articleId}", articleResponse.getArticleId())
+			.retrieve()
+			.body(ArticleResponse.class);
+	}
+
 
 	@Getter
 	@AllArgsConstructor

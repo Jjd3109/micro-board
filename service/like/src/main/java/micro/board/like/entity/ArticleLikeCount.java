@@ -14,19 +14,19 @@ import lombok.ToString;
 @Entity
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BoardArticleCount {
+public class ArticleLikeCount {
     @Id
     private Long articleId; // shard key
     private Long likeCount;
     @Version
     private Long version;
 
-    public static BoardArticleCount init(Long articleId, Long likeCount) {
-        BoardArticleCount boardArticleCount = new BoardArticleCount();
-        boardArticleCount.articleId = articleId;
-        boardArticleCount.likeCount = likeCount;
-        boardArticleCount.version = 0L;
-        return boardArticleCount;
+    public static ArticleLikeCount init(Long articleId, Long likeCount) {
+        ArticleLikeCount articleLikeCount = new ArticleLikeCount();
+        articleLikeCount.articleId = articleId;
+        articleLikeCount.likeCount = likeCount;
+        articleLikeCount.version = 0L;
+        return articleLikeCount;
     }
 
     public void increase() {

@@ -1,18 +1,15 @@
 package micro.board.like.service;
 
+import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
+import jakarta.transaction.Transactional;
 import kuke.board.common.snowflake.Snowflake;
 import lombok.RequiredArgsConstructor;
 import micro.board.like.entity.ArticleLike;
-import micro.board.like.entity.BoardArticleCount;
+import micro.board.like.entity.ArticleLikeCount;
 import micro.board.like.repository.ArticleLikeCountRepository;
 import micro.board.like.repository.ArticleLikeRepository;
 import micro.board.like.service.response.ArticleLikeResponse;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,17 +31,20 @@ public class ArticleLikeService {
     @Transactional
     public void likePessimisticLock1(Long articleId, Long userId) {
         ArticleLike articleLike = articleLikeRepository.save(
-            ArticleLike.create(snowflake.nextId(), articleId, userId)
+                ArticleLike.create(
+                        snowflake.nextId(),
+                        articleId,
+                        userId
+                )
         );
 
-        // PESSIMISTIC_WRITE 락을 걸어서 동시성 문제 방지
-        Optional<BoardArticleCount> likeCountOpt = articleLikeCountRepository.findLockedByArticleId(articleId);
-
-        if (likeCountOpt.isPresent()) {
-            BoardArticleCount likeCount = likeCountOpt.get();
-            likeCount.increase();
-        } else {
-            articleLikeCountRepository.save(BoardArticleCount.init(articleId, 1L));
+        int result = articleLikeCountRepository.increase(articleId);
+        if (result == 0) {
+            // 최초 요청 시에는 update 되는 레코드가 없으므로, 1로 초기화한다.
+            // 트래픽이 순식간에 몰릴 수 있는 상황에는 유실될 수 있으므로, 게시글 생성 시점에 미리 0으로 초기화 해둘 수도 있다.
+            articleLikeCountRepository.save(
+                    ArticleLikeCount.init(articleId, 1L)
+            );
         }
 
         // outboxEventPublisher.publish(
@@ -92,10 +92,10 @@ public class ArticleLikeService {
                         userId
                 )
         );
-        BoardArticleCount boardArticleCount = articleLikeCountRepository.findLockedByArticleId(articleId)
-                .orElseGet(() -> BoardArticleCount.init(articleId, 0L));
-        boardArticleCount.increase();
-        articleLikeCountRepository.save(boardArticleCount);
+        ArticleLikeCount articleLikeCount = articleLikeCountRepository.findLockedByArticleId(articleId)
+                .orElseGet(() -> ArticleLikeCount.init(articleId, 0L));
+        articleLikeCount.increase();
+        articleLikeCountRepository.save(articleLikeCount);
     }
 
     @Transactional
@@ -103,8 +103,8 @@ public class ArticleLikeService {
         articleLikeRepository.findByArticleIdAndUserId(articleId, userId)
                 .ifPresent(articleLike -> {
                     articleLikeRepository.delete(articleLike);
-                    BoardArticleCount boardArticleCount = articleLikeCountRepository.findLockedByArticleId(articleId).orElseThrow();
-                    boardArticleCount.decrease();
+                    ArticleLikeCount articleLikeCount = articleLikeCountRepository.findLockedByArticleId(articleId).orElseThrow();
+                    articleLikeCount.decrease();
                 });
     }
 
@@ -118,10 +118,10 @@ public class ArticleLikeService {
                 )
         );
 
-        BoardArticleCount boardArticleCount = articleLikeCountRepository.findById(articleId)
-                .orElseGet(() -> BoardArticleCount.init(articleId, 0L));
-        boardArticleCount.increase();
-        articleLikeCountRepository.save(boardArticleCount);
+        ArticleLikeCount articleLikeCount = articleLikeCountRepository.findById(articleId)
+                .orElseGet(() -> ArticleLikeCount.init(articleId, 0L));
+        articleLikeCount.increase();
+        articleLikeCountRepository.save(articleLikeCount);
     }
 
     @Transactional
@@ -129,14 +129,14 @@ public class ArticleLikeService {
         articleLikeRepository.findByArticleIdAndUserId(articleId, userId)
                 .ifPresent(articleLike -> {
                     articleLikeRepository.delete(articleLike);
-                    BoardArticleCount boardArticleCount = articleLikeCountRepository.findById(articleId).orElseThrow();
-                    boardArticleCount.decrease();
+                    ArticleLikeCount articleLikeCount = articleLikeCountRepository.findById(articleId).orElseThrow();
+                    articleLikeCount.decrease();
                 });
     }
 
     public Long count(Long articleId) {
         return articleLikeCountRepository.findById(articleId)
-                .map(BoardArticleCount::getLikeCount)
+                .map(ArticleLikeCount::getLikeCount)
                 .orElse(0L);
     }
 }

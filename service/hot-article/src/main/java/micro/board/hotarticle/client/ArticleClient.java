@@ -3,6 +3,7 @@ package micro.board.hotarticle.client;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import jakarta.annotation.PostConstruct;
@@ -11,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Getter
+@Component
 @RequiredArgsConstructor
 public class ArticleClient {
 

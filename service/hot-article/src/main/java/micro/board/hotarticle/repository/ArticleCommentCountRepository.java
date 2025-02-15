@@ -2,32 +2,29 @@ package micro.board.hotarticle.repository;
 
 import java.time.Duration;
 
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import micro.board.comment.entity.ArticleCommentCount;
 
 @Repository
-@Slf4j
-@RequiredArgsConstructor
-public class ArticleCommentCountRepository {
+public interface ArticleCommentCountRepository extends JpaRepository<ArticleCommentCount, Long> {
+	@Query(
+		value = "update article_comment_count set comment_count = comment_count + 1 where article_id = :articleId",
+		nativeQuery = true
+	)
+	@Modifying
+	int increase(@Param("articleId") Long articleId);
 
-	private final StringRedisTemplate redisTemplate;
-
-	// hot-article::article::{articleId}::comment-count
-	private static final String KEY_FORMAT = "hot-article::article::%s::comment-count";
-
-	public void createOrUpdate(Long articleId, Long commentCount, Duration ttl){
-		redisTemplate.opsForValue().set(generateKey(articleId), String.valueOf(commentCount), ttl); // 없으면 생성 아니면 updatate
-	}
-
-	public Long read(Long articleId){
-		String result = redisTemplate.opsForValue().get(generateKey(articleId));
-		return result == null ? 0L : Long.valueOf(result);
-	}
-
-	private String generateKey(Long articleId){
-		return KEY_FORMAT.formatted(articleId);
-	}
+	@Query(
+		value = "update article_comment_count set comment_count = comment_count - 1 where article_id = :articleId",
+		nativeQuery = true
+	)
+	@Modifying
+	int decrease(@Param("articleId") Long articleId);
 }

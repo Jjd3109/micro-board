@@ -1,19 +1,18 @@
 package micro.board.comment.service.response;
 
-import java.util.List;
-
 import lombok.Getter;
+
+import java.util.List;
 
 @Getter
 public class CommentPageResponse {
+    private List<CommentResponse> comments;
+    private Long commentCount;
 
-	private List<CommentResponse> commentResponseList;
-	private Long commentCount;
-
-	public static CommentPageResponse of(List<CommentResponse> commentResponseList, Long commentCount){
-		CommentPageResponse commentPageResponse = new CommentPageResponse();
-		commentPageResponse.commentResponseList = commentResponseList;
-		commentPageResponse.commentCount = commentCount;
-		return commentPageResponse;
-	}
+    public static CommentPageResponse of(List<CommentResponse> comments, Long commentCount) {
+        CommentPageResponse response = new CommentPageResponse();
+        response.comments = comments;
+        response.commentCount = commentCount;
+        return response;
+    }
 }

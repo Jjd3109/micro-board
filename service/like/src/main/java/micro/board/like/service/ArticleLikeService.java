@@ -3,6 +3,10 @@ package micro.board.like.service;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import kuke.board.common.event.EventType;
+import kuke.board.common.event.payload.ArticleLikedEventPayload;
+import kuke.board.common.event.payload.ArticleUnlikedEventPayload;
+import kuke.board.common.outboxmessagerelay.OutboxEventPublisher;
 import kuke.board.common.snowflake.Snowflake;
 import lombok.RequiredArgsConstructor;
 import micro.board.like.entity.ArticleLike;
@@ -15,7 +19,7 @@ import micro.board.like.service.response.ArticleLikeResponse;
 @RequiredArgsConstructor
 public class ArticleLikeService {
     private final Snowflake snowflake = new Snowflake();
-    //private final OutboxEventPublisher outboxEventPublisher;
+    private final OutboxEventPublisher outboxEventPublisher;
     private final ArticleLikeRepository articleLikeRepository;
     private final ArticleLikeCountRepository articleLikeCountRepository;
 
@@ -47,17 +51,17 @@ public class ArticleLikeService {
             );
         }
 
-        // outboxEventPublisher.publish(
-        //         EventType.ARTICLE_LIKED,
-        //         ArticleLikedEventPayload.builder()
-        //                 .articleLikeId(articleLike.getArticleLikeId())
-        //                 .articleId(articleLike.getArticleId())
-        //                 .userId(articleLike.getUserId())
-        //                 .createdAt(articleLike.getCreatedAt())
-        //                 .articleLikeCount(count(articleLike.getArticleId()))
-        //                 .build(),
-        //         articleLike.getArticleId()
-        // );
+        outboxEventPublisher.publish(
+                EventType.ARTICLE_LIKED,
+                ArticleLikedEventPayload.builder()
+                        .articleLikeId(articleLike.getArticleLikeId())
+                        .articleId(articleLike.getArticleId())
+                        .userId(articleLike.getUserId())
+                        .createdAt(articleLike.getCreatedAt())
+                        .articleLikeCount(count(articleLike.getArticleId()))
+                        .build(),
+                articleLike.getArticleId()
+        );
     }
 
     @Transactional
@@ -66,17 +70,17 @@ public class ArticleLikeService {
                 .ifPresent(articleLike -> {
                     articleLikeRepository.delete(articleLike);
                     articleLikeCountRepository.decrease(articleId);
-                    // outboxEventPublisher.publish(
-                    //         EventType.ARTICLE_UNLIKED,
-                    //         ArticleUnlikedEventPayload.builder()
-                    //                 .articleLikeId(articleLike.getArticleLikeId())
-                    //                 .articleId(articleLike.getArticleId())
-                    //                 .userId(articleLike.getUserId())
-                    //                 .createdAt(articleLike.getCreatedAt())
-                    //                 .articleLikeCount(count(articleLike.getArticleId()))
-                    //                 .build(),
-                    //         articleLike.getArticleId()
-                    // );
+                    outboxEventPublisher.publish(
+                            EventType.ARTICLE_UNLIKED,
+                            ArticleUnlikedEventPayload.builder()
+                                    .articleLikeId(articleLike.getArticleLikeId())
+                                    .articleId(articleLike.getArticleId())
+                                    .userId(articleLike.getUserId())
+                                    .createdAt(articleLike.getCreatedAt())
+                                    .articleLikeCount(count(articleLike.getArticleId()))
+                                    .build(),
+                            articleLike.getArticleId()
+                    );
                 });
     }
 
